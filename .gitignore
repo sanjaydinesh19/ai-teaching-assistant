@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Node
+node_modules/
+build/
+dist/
+
+# OS
+.DS_Store
+.env
+
+# Docker
+*.log
+
+# React
+ui/node_modules/
+ui/.env

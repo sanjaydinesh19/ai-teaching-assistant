@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+
+  image-agent:
+    build: ./agents/image
+    ports:
+      - "8001:8000"
+
+  studyplan-agent:
+    build: ./agents/studyplan
+    ports:
+      - "8002:8000"
+
+  voice-agent:
+    build: ./agents/voice
+    ports:
+      - "8003:8000"
+
+  ui:
+    build: ./ui
+    ports:
+      - "3000:80"

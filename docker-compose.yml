@@ -4,11 +4,26 @@ services:
     env_file:
       - .env
     environment:
-      - STUDYPLAN_URL=http://studyplan:8001   # internal DNS (service name)
+      - STUDYPLAN_URL=http://studyplan:8001   
+      - IMAGE_URL=http://image:8002
     ports:
       - "8000:8000"
     depends_on:
       - studyplan
+      - image
+  image:
+    build: ./agents/image
+    env_file:
+      - .env
+    environment:
+      - FILE_STORE=/data
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=gpt-4o
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - ALL_PROXY=
+    volumes:
+      - ./_filestore:/data
 
   studyplan:
     build: ./agents/studyplan
@@ -20,5 +35,3 @@ services:
       - OPENAI_MODEL=gpt-4o-mini
     volumes:
       - ./_filestore:/data
-    # ports:
-    #   - "8001:8001"   # ← remove/comment these lines

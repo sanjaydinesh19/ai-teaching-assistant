@@ -1,27 +1,24 @@
-version: "3.9"
-
 services:
   gateway:
     build: ./gateway
+    env_file:
+      - .env
+    environment:
+      - STUDYPLAN_URL=http://studyplan:8001   # internal DNS (service name)
     ports:
       - "8000:8000"
+    depends_on:
+      - studyplan
 
-  image-agent:
-    build: ./agents/image
-    ports:
-      - "8001:8000"
-
-  studyplan-agent:
+  studyplan:
     build: ./agents/studyplan
-    ports:
-      - "8002:8000"
-
-  voice-agent:
-    build: ./agents/voice
-    ports:
-      - "8003:8000"
-
-  ui:
-    build: ./ui
-    ports:
-      - "3000:80"
+    env_file:
+      - .env
+    environment:
+      - FILE_STORE=/data
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=gpt-4o-mini
+    volumes:
+      - ./_filestore:/data
+    # ports:
+    #   - "8001:8001"   # ← remove/comment these lines

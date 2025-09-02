@@ -22,5 +22,12 @@ ui/.env
 # Local file storage (PDFs, images, audio)
 _filestore/
 
-#old unused folder
+# Node
+node_modules/
+**/node_modules/
+
+# Old/unused
 ui/
+
+# Local runtime storage
+_filestore/

@@ -12,6 +12,9 @@ services:
     depends_on:
       - studyplan
       - image
+      - voice
+    volumes:
+      - ./_filestore:/data
 
   image:
     build: ./agents/image

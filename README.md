@@ -5,11 +5,11 @@ The goal is to empower teachers by automating content generation (text, image, v
 
 ---
 
-## � Current Features
+## Current Features
 
 This monorepo is structured with Docker and includes the following microservices:
 
-### � Microservices (FastAPI-based)
+### Microservices (FastAPI-based)
 
 - **`studyplan-agent`**  
   - Input: syllabus PDF (`file_id`)  
@@ -29,7 +29,7 @@ This monorepo is structured with Docker and includes the following microservices
 
 ---
 
-## � Frontend
+## Frontend
 
 - ReactJS Progressive Web App scaffolded with `create-react-app`  
 - Will serve as the main UI for teachers:  
@@ -39,7 +39,7 @@ This monorepo is structured with Docker and includes the following microservices
 
 ---
 
-## � Dockerized Setup
+## Dockerized Setup
 
 A single `docker-compose.yml` file runs the entire stack:
 

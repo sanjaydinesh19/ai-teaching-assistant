@@ -21,3 +21,6 @@ ui/.env
 
 # Local file storage (PDFs, images, audio)
 _filestore/
+
+#old unused folder
+ui/

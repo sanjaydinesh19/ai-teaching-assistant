@@ -6,11 +6,13 @@ services:
     environment:
       - STUDYPLAN_URL=http://studyplan:8001   
       - IMAGE_URL=http://image:8002
+      - VOICE_URL=http://voice:8003
     ports:
       - "8000:8000"
     depends_on:
       - studyplan
       - image
+
   image:
     build: ./agents/image
     env_file:
@@ -33,5 +35,21 @@ services:
       - FILE_STORE=/data
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=gpt-4o-mini
+    volumes:
+      - ./_filestore:/data
+
+  voice:
+    build: ./agents/voice
+    env_file:
+      - .env
+    environment:
+      - FILE_STORE=/data
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_ASR_MODEL=gpt-4o-mini-transcribe
+      - OPENAI_REASON_MODEL=gpt-4o-mini
+      - OPENAI_TTS_MODEL=gpt-4o-mini-tts
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - ALL_PROXY=
     volumes:
       - ./_filestore:/data

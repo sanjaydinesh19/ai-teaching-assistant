@@ -1,14 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from ..schemas import VoiceAskRequest, VoiceAskResponse
-from ..utils.ids import make_id
+from .. import deps
+import httpx
 
 router = APIRouter(prefix="/voice", tags=["voice"])
 
 @router.post("/ask", response_model=VoiceAskResponse)
 def voice_ask(body: VoiceAskRequest):
-    # Stubbed response (contract only)
-    return VoiceAskResponse(
-        transcript="Why do shadows change length during the day?",
-        explanation="Because the Sun’s apparent position changes, causing different angles of light.",
-        audio_url="/files/ans_sample.mp3"
-    )
+    try:
+        with httpx.Client(timeout=120) as client:
+            r = client.post(f"{deps.VOICE_URL}/ask", json=body.model_dump())
+            if r.status_code != 200:
+                raise HTTPException(status_code=r.status_code, detail=r.text)
+            return VoiceAskResponse(**r.json())
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=502, detail=f"voice-agent unreachable: {e}")

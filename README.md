@@ -57,4 +57,3 @@ docker compose ps
 
 # view logs (e.g., studyplan-agent)
 docker compose logs -f studyplan
-```

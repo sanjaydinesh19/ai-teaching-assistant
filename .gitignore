@@ -18,3 +18,6 @@ dist/
 # React
 ui/node_modules/
 ui/.env
+
+# Local file storage (PDFs, images, audio)
+_filestore/

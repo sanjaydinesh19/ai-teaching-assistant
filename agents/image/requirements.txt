@@ -3,3 +3,6 @@ uvicorn[standard]==0.30.6
 pydantic==2.8.2
 openai==1.56.0
 reportlab==4.2.2
+PyPDF2
+python-pptx
+reportlab

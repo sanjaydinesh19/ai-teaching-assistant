@@ -1,27 +1,20 @@
-import os, time, random, string
 from fastapi import FastAPI, HTTPException
-from .schemas import ImageWorksheetRequest, ImageWorksheetResponse
-from .agent import generate_worksheet
+from .schemas import WorksheetRequest, WorksheetResponse
+from .agent import build_worksheets
 
-FILE_STORE = os.environ.get("FILE_STORE","/data")
-app = FastAPI(title="image-agent", version="0.1.0")
+app = FastAPI(title="image-agent", version="0.2.0")
 
-def make_id(prefix="ws"):
-    ts=str(int(time.time()))
-    rnd="".join(random.choice("abcdefghijklmnopqrstuvwxyz0123456789") for _ in range(6))
-    return f"{prefix}_{ts}{rnd}"
-
-@app.get("/health")
+@app.get("/health", tags=["meta"])
 def health():
-    return {"status":"ok"}
+    return {"status": "ok"}
 
-@app.post("/worksheet", response_model=ImageWorksheetResponse)
-def worksheet(body: ImageWorksheetRequest):
-    path = os.path.join(FILE_STORE, f"{body.file_id}.png")
-    if not os.path.exists(path):
-        raise HTTPException(404, f"Image not found: {path}")
-    worksheet_id = make_id()
+@app.post("/worksheet", response_model=WorksheetResponse)
+def worksheet(body: WorksheetRequest):
     try:
-        return generate_worksheet(body, path, worksheet_id)
+        return build_worksheets(body)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        raise HTTPException(500, f"Worksheet generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"image-agent error: {e}")

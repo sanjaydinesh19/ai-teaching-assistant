@@ -1,17 +1,17 @@
-from fastapi import APIRouter, HTTPException
-from ..schemas import ImageWorksheetRequest, ImageWorksheetResponse
+from fastapi import APIRouter, HTTPException, Request
 from .. import deps
 import httpx
 
 router = APIRouter(prefix="/image", tags=["image"])
 
-@router.post("/worksheet", response_model=ImageWorksheetResponse)
-def generate_worksheet(body: ImageWorksheetRequest):
+@router.post("/worksheet")
+async def generate_worksheet(request: Request):
+    body = await request.json()
     try:
-        with httpx.Client(timeout=90) as client:
-            r = client.post(f"{deps.IMAGE_URL}/worksheet", json=body.model_dump())
-            if r.status_code != 200:
-                raise HTTPException(status_code=r.status_code, detail=r.text)
-            return ImageWorksheetResponse(**r.json())
+        async with httpx.AsyncClient(timeout=120) as client:
+            r = await client.post(f"{deps.IMAGE_URL}/worksheet", json=body)
+        if r.status_code != 200:
+            raise HTTPException(status_code=r.status_code, detail=r.text)
+        return r.json()
     except httpx.RequestError as e:
         raise HTTPException(status_code=502, detail=f"image-agent unreachable: {e}")

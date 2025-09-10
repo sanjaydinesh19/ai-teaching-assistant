@@ -24,6 +24,11 @@ async def upload_file(
         ext = ".wav"
     elif file.content_type in ("audio/mpeg", "audio/mp3"):
         ext = ".mp3"
+    elif file.content_type in (
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    ):
+        ext = ".pptx"
 
     if not ext:
         raise HTTPException(415, f"Unsupported file type: {file.content_type}")
@@ -37,4 +42,5 @@ async def upload_file(
     except Exception as e:
         raise HTTPException(500, f"Failed to save file: {e}")
 
-    return {"ok": True, "file_id": file_id, "saved_as": f"/files/{file_id}{ext}"}
+    return {"ok": True, "file_id": file_id, "saved_as": dest}
+

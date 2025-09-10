@@ -6,17 +6,15 @@ import httpx
 
 router = APIRouter(prefix="/studyplan", tags=["studyplan"])
 
-@router.post("/from-syllabus", response_model=StudyPlanResponse)
+@router.post("/from-syllabus")
 def create_plan(body: StudyPlanRequest):
-    """
-    Forwards to studyplan-agent. The gateway owns IDs if you want them here,
-    but studyplan-agent already creates a plan_id; we keep this simple and accept its response.
-    """
     try:
         with httpx.Client(timeout=60) as client:
             r = client.post(f"{deps.STUDYPLAN_URL}/from-syllabus", json=body.model_dump())
             if r.status_code != 200:
+                print("Studyplan-agent error:", r.text)
                 raise HTTPException(status_code=r.status_code, detail=r.text)
-            return StudyPlanResponse(**r.json())
+            return r.json()  
     except httpx.RequestError as e:
         raise HTTPException(status_code=502, detail=f"studyplan-agent unreachable: {e}")
+

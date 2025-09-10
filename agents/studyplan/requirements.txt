@@ -3,3 +3,5 @@ uvicorn[standard]==0.30.6
 pydantic==2.8.2
 pymupdf==1.24.10
 openai==1.56.0
+PyPDF2
+reportlab

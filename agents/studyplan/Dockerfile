@@ -11,3 +11,6 @@ RUN chmod +x ./uvicorn_start.sh
 ENV FILE_STORE=/data
 EXPOSE 8001
 CMD ["./uvicorn_start.sh"]
+
+COPY app /app/app
+COPY app/assets/fonts /app/app/assets/fonts

@@ -11,6 +11,7 @@ class StudyPlanRequest(BaseModel):
         default=None,
         description='e.g., {"per_day_minutes": 35, "weekdays": ["Mon","Wed","Fri"]}'
     )
+    target_language: str = Field(default="en", description="Target language code, e.g., 'en', 'hi', 'ta'")
 
 class WeeklyItem(BaseModel):
     week: int

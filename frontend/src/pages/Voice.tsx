@@ -5,6 +5,7 @@ const Voice: React.FC = () => {
   const [language, setLanguage] = useState("en");
   const [loading, setLoading] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const [answer, setAnswer] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
 
   const handleUpload = async () => {
@@ -12,6 +13,7 @@ const Voice: React.FC = () => {
 
     setLoading(true);
     setTranscript("");
+    setAnswer("");
     setAudioUrl("");
 
     try {
@@ -40,11 +42,10 @@ const Voice: React.FC = () => {
 
       if (!resp.ok) throw new Error("Voice processing failed");
       const data = await resp.json();
-      setTranscript(
-        (data.transcript ? "Transcript:\n" + data.transcript + "\n\n" : "") +
-        (data.answer_text ? "Answer:\n" + data.answer_text : "")
-      );
+      setTranscript(data.transcript || "");   // always update from backend
+      setAnswer(data.answer_text || "");
       setAudioUrl(data.answer_audio_url ? `http://localhost:8000${data.answer_audio_url}` : "");
+
 
     } catch (err) {
       console.error(err);
@@ -55,20 +56,20 @@ const Voice: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Voice Teaching Assistant</h1>
+    <div className="p-6 max-w-2xl mx-auto text-gray-200">
+      <h1 className="text-2xl font-bold mb-4 text-white">Voice Teaching Assistant</h1>
 
       <input
         type="file"
         accept="audio/*"
         onChange={(e) => setFile(e.target.files?.[0] || null)}
-        className="mb-4"
+        className="bg-[#1a1a25] border border-purple-500 rounded p-2 w-full text-white mb-4"
       />
 
       <select
         value={language}
         onChange={(e) => setLanguage(e.target.value)}
-        className="border p-2 rounded mb-4"
+        className="bg-[#1a1a25] border border-purple-500 rounded p-2 w-full text-white mb-6"
       >
         <option value="en">English</option>
         <option value="hi">Hindi</option>
@@ -78,21 +79,33 @@ const Voice: React.FC = () => {
       <button
         onClick={handleUpload}
         disabled={loading || !file}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow-lg disabled:opacity-50 transition w-full"
       >
         {loading ? "Processing..." : "Upload & Generate"}
       </button>
 
       {transcript && (
         <div className="mt-6">
-          <h2 className="text-lg font-semibold">Transcript:</h2>
-          <p className="bg-gray-100 p-3 rounded">{transcript}</p>
+          <h2 className="text-lg font-semibold text-white">Transcript:</h2>
+          <p className="bg-[#1a1a25] border border-purple-500 p-3 rounded text-white whitespace-pre-line">
+            {transcript}
+          </p>
         </div>
       )}
 
+      {answer && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold text-white">AI Answer:</h2>
+          <p className="bg-[#1a1a25] border border-purple-500 p-3 rounded text-white whitespace-pre-line">
+            {answer}
+          </p>
+        </div>
+      )}
+
+
       {audioUrl && (
         <div className="mt-6">
-          <h2 className="text-lg font-semibold">AI Audio Response:</h2>
+          <h2 className="text-lg font-semibold text-white">AI Audio Response:</h2>
           <audio controls src={audioUrl} className="mt-2 w-full" />
         </div>
       )}

@@ -41,7 +41,7 @@ def transcribe(audio_path: str, lang: str) -> str:
         tr = client.audio.transcriptions.create(
             model=ASR_MODEL,
             file=f,
-            # If model supports it: language=lang  (some models auto-detect)
+            language=lang
         )
     return tr.text.strip()
 

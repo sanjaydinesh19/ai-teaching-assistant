@@ -63,3 +63,15 @@ class VoiceAskResponse(BaseModel):
     transcript: str
     explanation: str
     audio_url: str
+
+# --- Voice Agent Schemas ---
+class VoiceRequest(BaseModel):
+    file_id: str
+    target_language: str = "en"
+    topic_hint: Optional[str] = None
+
+
+class VoiceResponse(BaseModel):
+    transcript: str
+    answer_text: str
+    answer_audio_url: str

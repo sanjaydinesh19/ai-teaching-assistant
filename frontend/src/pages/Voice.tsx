@@ -17,7 +17,6 @@ const Voice: React.FC = () => {
     setAudioUrl("");
 
     try {
-      // Step 1: Upload file
       const formData = new FormData();
       formData.append("file", file);
       formData.append("file_id", "upload-audio1");
@@ -26,11 +25,9 @@ const Voice: React.FC = () => {
         method: "POST",
         body: formData,
       });
-
       if (!uploadResp.ok) throw new Error("Upload failed");
       const { file_id } = await uploadResp.json();
 
-      // Step 2: Call voice-agent via gateway
       const resp = await fetch("http://localhost:8000/voice/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -42,11 +39,11 @@ const Voice: React.FC = () => {
 
       if (!resp.ok) throw new Error("Voice processing failed");
       const data = await resp.json();
-      setTranscript(data.transcript || "");   // always update from backend
+
+      // ? Separate transcript + answer (not concatenated)
+      setTranscript(data.transcript_text || "");
       setAnswer(data.answer_text || "");
-      setAudioUrl(data.answer_audio_url ? `http://localhost:8000${data.answer_audio_url}` : "");
-
-
+      setAudioUrl(data.audio_file_url ? `http://localhost:8000${data.audio_file_url}` : "");
     } catch (err) {
       console.error(err);
       setTranscript("Error processing voice input.");
@@ -101,7 +98,6 @@ const Voice: React.FC = () => {
           </p>
         </div>
       )}
-
 
       {audioUrl && (
         <div className="mt-6">

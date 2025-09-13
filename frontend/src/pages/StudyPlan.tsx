@@ -26,7 +26,6 @@ export default function StudyPlan() {
     setResult(null);
 
     try {
-      // 1. Upload file
       const formData = new FormData();
       const fileId = `upload-${Date.now()}`;
       formData.append("file_id", fileId);
@@ -37,7 +36,6 @@ export default function StudyPlan() {
         body: formData
       });
 
-      // 2. Call studyplan
       const payload = {
         file_id: fileId,
         grades: grades.split(",").map(g => g.trim()),
@@ -63,8 +61,8 @@ export default function StudyPlan() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Generate Study Plan</h1>
+    <div className="p-6 max-w-2xl mx-auto text-gray-200">
+      <h1 className="text-2xl font-bold mb-4 text-white">Generate Study Plan</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -73,7 +71,7 @@ export default function StudyPlan() {
             type="file"
             accept=".pdf"
             onChange={e => setFile(e.target.files?.[0] || null)}
-            className="border rounded p-2 w-full"
+            className="bg-[#1a1a25] border border-purple-500 rounded p-2 w-full text-white"
           />
         </div>
 
@@ -83,7 +81,7 @@ export default function StudyPlan() {
             type="text"
             value={grades}
             onChange={e => setGrades(e.target.value)}
-            className="border rounded p-2 w-full"
+            className="bg-[#1a1a25] border border-purple-500 rounded p-2 w-full text-white"
             placeholder="e.g. 3,4,5"
           />
         </div>
@@ -93,7 +91,7 @@ export default function StudyPlan() {
           <select
             value={language}
             onChange={e => setLanguage(e.target.value)}
-            className="border rounded p-2 w-full"
+            className="bg-[#1a1a25] border border-purple-500 rounded p-2 w-full text-white"
           >
             <option value="en">English</option>
             <option value="hi">Hindi</option>
@@ -107,7 +105,7 @@ export default function StudyPlan() {
             type="number"
             value={weeks}
             onChange={e => setWeeks(Number(e.target.value))}
-            className="border rounded p-2 w-full"
+            className="bg-[#1a1a25] border border-purple-500 rounded p-2 w-full text-white"
           />
         </div>
 
@@ -117,7 +115,7 @@ export default function StudyPlan() {
             type="number"
             value={minutes}
             onChange={e => setMinutes(Number(e.target.value))}
-            className="border rounded p-2 w-full"
+            className="bg-[#1a1a25] border border-purple-500 rounded p-2 w-full text-white"
           />
         </div>
 
@@ -130,6 +128,7 @@ export default function StudyPlan() {
                   type="checkbox"
                   checked={weekdays.includes(day)}
                   onChange={() => handleCheckbox(day)}
+                  className="accent-purple-600"
                 />
                 <span>{day}</span>
               </label>
@@ -140,16 +139,16 @@ export default function StudyPlan() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded shadow-lg disabled:opacity-50 transition"
         >
           {loading ? "Generating..." : "Generate"}
         </button>
       </form>
 
-      {error && <p className="text-red-600 mt-4">{error}</p>}
+      {error && <p className="text-red-400 mt-4">{error}</p>}
 
       {result && (
-        <div className="mt-6 p-4 border rounded bg-gray-50">
+        <div className="mt-6 p-4 border border-purple-500 rounded bg-[#1a1a25] text-white">
           <h2 className="text-lg font-semibold mb-2">Study Plan Generated ✅</h2>
           <p><strong>Grades:</strong> {result.grades.join(", ")}</p>
           <p><strong>Weeks:</strong> {result.weeks}</p>
@@ -158,7 +157,7 @@ export default function StudyPlan() {
             href={`http://localhost:8000${result.printable_file_url}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 underline"
+            className="text-purple-400 underline"
           >
             Download {result.printable_file_url.split("/").pop()}
           </a>

@@ -30,7 +30,7 @@ services:
       - ALL_PROXY=
     volumes:
       - ./_filestore:/data
-
+      - ./agents/image/app/assets/fonts:/app/app/assets/fonts
   studyplan:
     build: ./agents/studyplan
     env_file:

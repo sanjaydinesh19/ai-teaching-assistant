@@ -89,14 +89,15 @@ def handle_voice(req: VoiceRequest) -> VoiceResponse:
     mp3_path = tts_to_file(answer_clean, req.tts_voice, req.tts_speed, req.target_language)
     mp3_name = os.path.basename(mp3_path)
 
-    # Optional: save plaintext transcript
+    # Optional: save plaintext output for download
     txt_name = f"{os.path.splitext(mp3_name)[0]}.txt"
     txt_path = os.path.join(FILE_ROOT, txt_name)
     with open(txt_path, "w", encoding="utf-8") as f:
         f.write(answer_clean)
+
     return VoiceResponse(
-        transcript_text=cleaned_transcript,
+        transcript=cleaned_transcript,
         answer_text=answer_clean,
-        audio_file_url=f"/files/{mp3_name}",
-        transcript_file_url=f"/files/{txt_name}"
+        answer_audio_url=f"/files/{mp3_name}",
+        transcript_file_url=f"/files/{txt_name}",
     )

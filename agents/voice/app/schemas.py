@@ -1,13 +1,15 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Optional
 
-class VoiceAskRequest(BaseModel):
-    audio_file_id: str
-    level: str = Field(..., description="e.g., 'grade-5'")
-    visual_format: Literal["board-notes","steps","story"] = "board-notes"
-    max_seconds: int = Field(90, ge=15, le=180)
+class VoiceRequest(BaseModel):
+    file_id: str
+    target_language: str = "en"
+    tts_voice: str = "alloy"
+    tts_speed: float = 1.0
+    topic_hint: Optional[str] = None
 
-class VoiceAskResponse(BaseModel):
+class VoiceResponse(BaseModel):
     transcript: str
-    explanation: str
-    audio_url: str
+    answer_text: str
+    answer_audio_url: str
+    transcript_file_url: Optional[str] = None

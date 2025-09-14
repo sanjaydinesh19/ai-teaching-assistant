@@ -19,7 +19,7 @@ This monorepo is structured with Docker and includes the following microservices
   - Input: textbook page image (`file_id`)  
   - Output: worksheet questions (MCQ, short, diagram) + printable PDF  
 
-- **`voice-agent`** *(planned)*  
+- **`voice-agent`** 
   - Input: teacher/student voice query (`file_id`)  
   - Output: transcript + explanation (text/visual) + audio reply  
 

@@ -1,12 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from .schemas import StudyPlanRequest, StudyPlanResponse
 from .agent import generate_study_plan
+from .metrics_logger import aggregate_metrics
 
 app = FastAPI(title="studyplan-agent", version="0.2.0")
 
 @app.get("/health", tags=["meta"])
 def health():
     return {"status": "ok"}
+
+@app.get("/metrics", tags=["performance"])
+def get_metrics():
+    return aggregate_metrics()
 
 @app.post("/from-syllabus", response_model=StudyPlanResponse)
 def from_syllabus(body: StudyPlanRequest):

@@ -5,6 +5,10 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from .metrics_logger import (
+    log_metric_entry, compute_accuracy, compute_quality, validate_plan
+)
+
 
 from openai import OpenAI
 from .schemas import StudyPlanRequest, StudyPlanResponse, WeeklyItem
@@ -265,37 +269,67 @@ def render_plan_file(plan: Dict[str, Any], req: StudyPlanRequest, plan_id: str) 
 
 # --------- Public entry ----------
 def generate_study_plan(req: StudyPlanRequest) -> StudyPlanResponse:
-    syllabus_text = read_pdf_text(req.file_id)
+    entry = {
+        "agent": "studyplan_agent",
+        "grades": req.grades,
+        "language": req.target_language,
+        "success": False,
+        "json_valid": False,
+        "accuracy": 0.0,
+        "quality_score": 0.0,
+        "response_time": 0.0
+    }
 
-    # Single pass: rely on the LLM to generate in the requested language
-    plan_data = llm_plan(syllabus_text, req)
+    try:
+        start = time.time()
+        syllabus_text = read_pdf_text(req.file_id)
+        plan_data = llm_plan(syllabus_text, req)
+        duration = time.time() - start
 
-    plan_id = make_id()
-    out_path = render_plan_file(plan_data, req, plan_id)
-    out_name = os.path.basename(out_path)
-    printable_url = f"/files/{out_name}"
+        entry["response_time"] = round(duration, 2)
+        entry["json_valid"] = validate_plan(req, plan_data)
 
-    print("DEBUG target_language:", req.target_language)
+        # --- Compute Accuracy (real syllabus-topic overlap) ---
+        entry["accuracy"] = compute_accuracy(syllabus_text, plan_data)
 
-    # Map back into Pydantic for response
-    weekly = []
-    for wk in plan_data.get("weekly_outline", []):
-        weekly.append(WeeklyItem(
-            week=wk.get("week"),
-            topics=wk.get("topics", []),
-            activities=wk.get("activities", []),
-            assessment=wk.get("assessment", ""),
-            homework=wk.get("homework"),
-            resources=wk.get("resources", [])
-        ))
+        # --- Compute Quality (real LLM rubric evaluation) ---
+        entry["quality_score"] = compute_quality(plan_data)
 
-    return StudyPlanResponse(
-        plan_id=plan_id,
-        grades=req.grades,
-        weeks=req.duration_weeks,
-        target_language=req.target_language,
-        overview=plan_data.get("overview", ""),
-        weekly_outline=weekly,
-        printable_file_url=printable_url
-    )
+        plan_id = make_id()
+        out_path = render_plan_file(plan_data, req, plan_id)
+        out_name = os.path.basename(out_path)
+        printable_url = f"/files/{out_name}"
+
+        entry["success"] = True
+        entry["output_file"] = out_name
+        log_metric_entry(entry)
+
+        # build final structured response
+        weekly = [
+            WeeklyItem(
+                week=wk.get("week"),
+                topics=wk.get("topics", []),
+                activities=wk.get("activities", []),
+                assessment=wk.get("assessment", ""),
+                homework=wk.get("homework"),
+                resources=wk.get("resources", [])
+            )
+            for wk in plan_data.get("weekly_outline", [])
+        ]
+
+        return StudyPlanResponse(
+            plan_id=plan_id,
+            grades=req.grades,
+            weeks=req.duration_weeks,
+            target_language=req.target_language,
+            overview=plan_data.get("overview", ""),
+            weekly_outline=weekly,
+            printable_file_url=printable_url
+        )
+
+    except Exception as e:
+        entry["error"] = str(e)
+        log_metric_entry(entry)
+        raise
+
 

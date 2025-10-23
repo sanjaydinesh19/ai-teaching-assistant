@@ -3,6 +3,12 @@ from typing import List, Dict, Any, Tuple
 from PyPDF2 import PdfReader
 from pptx import Presentation
 from openai import OpenAI
+from .metrics_logger import (
+    log_metric_entry,
+    compute_quality,
+    compute_accuracy,
+    validate_response
+)
 
 from .pdf import render_pdf
 from .schemas import WorksheetRequest, WorksheetResponse, WorksheetSetResponse, WorksheetItem
@@ -130,34 +136,66 @@ Return STRICT JSON with key "items".
 
 # ---- Public entry ----
 def build_worksheets(req: WorksheetRequest) -> WorksheetResponse:
-    context = aggregate_source_text(req.file_ids)
+    entry = {
+        "agent": "worksheet_agent",
+        "grades": req.grade_bands or [],
+        "language": req.target_language,
+        "success": False,
+        "json_valid": False,
+        "accuracy": 0.0,
+        "quality_score": 0.0,
+        "response_time": 0.0
+    }
 
-    if len(req.difficulty_levels) == 1 and req.num_sets > 1:
-        diffs = [req.difficulty_levels[0]] * req.num_sets
-    elif len(req.difficulty_levels) == req.num_sets:
-        diffs = req.difficulty_levels
-    else:
-        raise ValueError("difficulty_levels must be length 1 (to broadcast) or equal to num_sets")
+    try:
+        start = time.time()
+        context = aggregate_source_text(req.file_ids)
 
-    wid = _id()
-    sets_out = []
+        if len(req.difficulty_levels) == 1 and req.num_sets > 1:
+            diffs = [req.difficulty_levels[0]] * req.num_sets
+        elif len(req.difficulty_levels) == req.num_sets:
+            diffs = req.difficulty_levels
+        else:
+            raise ValueError("difficulty_levels must be length 1 (to broadcast) or equal to num_sets")
 
-    for i, diff in enumerate(diffs, start=1):
-        # ✅ generate dicts
-        items_dicts = generate_items(context, req, diff, req.questions_per_set)
+        wid = _id()
+        sets_out = []
 
-        # ✅ convert dicts → WorksheetItem models
-        items = [WorksheetItem(**x) for x in items_dicts]
+        # For accuracy evaluation, aggregate all items later
+        all_items = []
 
-        worksheet_id = f"{_id()}-{diff}-set{i}"
-        pdf_path = render_pdf(items, worksheet_id, req.target_language.lower())
-        pdf_name = os.path.basename(pdf_path)
+        for i, diff in enumerate(diffs, start=1):
+            items_dicts = generate_items(context, req, diff, req.questions_per_set)
+            items = [WorksheetItem(**x) for x in items_dicts]
+            all_items.extend(items)
 
-        sets_out.append(WorksheetSetResponse(
-            set_no=i,
-            difficulty=diff,  # type: ignore
-            items=items,
-            printable_pdf_url=f"/files/{pdf_name}"
-        ))
+            worksheet_id = f"{_id()}-{diff}-set{i}"
+            pdf_path = render_pdf(items, worksheet_id, req.target_language.lower())
+            pdf_name = os.path.basename(pdf_path)
 
-    return WorksheetResponse(worksheet_id=wid, sets=sets_out)
+            sets_out.append(WorksheetSetResponse(
+                set_no=i,
+                difficulty=diff,  # type: ignore
+                items=items,
+                printable_pdf_url=f"/files/{pdf_name}"
+            ))
+
+        duration = round(time.time() - start, 2)
+        resp_dict = WorksheetResponse(worksheet_id=wid, sets=sets_out).model_dump()
+
+        # --- Metrics ---
+        entry["response_time"] = duration
+        entry["json_valid"] = validate_response(resp_dict)
+        entry["accuracy"] = compute_accuracy(context, all_items)
+        entry["quality_score"] = compute_quality(all_items, diff, req.grade_bands or [])
+        entry["success"] = True
+
+        log_metric_entry(entry)
+
+        return WorksheetResponse(**resp_dict)
+
+    except Exception as e:
+        entry["error"] = str(e)
+        log_metric_entry(entry)
+        raise
+

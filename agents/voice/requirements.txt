@@ -1,5 +1,21 @@
+# --- Core Framework ---
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.8.2
+
+# --- OpenAI API Client ---
 openai==1.56.0
-pydub
+
+# --- PDF & File Handling (optional, if transcript saving is kept) ---
+PyPDF2
+
+# --- Text Processing & Embeddings ---
+numpy==2.1.2
+scikit-learn==1.5.2
+
+# --- Audio Handling ---
+pydub==0.25.1          # Optional: if you need to convert audio formats
+soundfile==0.12.1      # Optional: for .wav manipulation
+
+# --- Logging & Utilities ---
+python-dotenv==1.0.1   # For managing environment variables

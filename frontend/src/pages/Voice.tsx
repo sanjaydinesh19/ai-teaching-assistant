@@ -43,7 +43,7 @@ const Voice: React.FC = () => {
       // ? Separate transcript + answer (not concatenated)
       setTranscript(data.transcript_text || "");
       setAnswer(data.answer_text || "");
-      setAudioUrl(data.audio_file_url ? `http://localhost:8000${data.audio_file_url}` : "");
+      setAudioUrl(data.answer_audio_url ? `http://localhost:8000${data.answer_audio_url}` : "");
     } catch (err) {
       console.error(err);
       setTranscript("Error processing voice input.");

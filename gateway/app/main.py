@@ -33,5 +33,7 @@ app.include_router(voice.router)
 app.include_router(upload.router)
 
 # Serve static files (PDFs and MP3s) from _filestore
+# gateway/main.py
 FILE_ROOT = os.environ.get("FILE_STORE", "/data")
 app.mount("/files", StaticFiles(directory=FILE_ROOT), name="files")
+
